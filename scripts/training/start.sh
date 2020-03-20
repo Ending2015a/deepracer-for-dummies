@@ -2,11 +2,14 @@
 
 export ROBOMAKER_COMMAND="./run.sh build distributed_training.launch"
 
-docker-compose -f ../../docker/docker-compose.yml up -d
+source ../../deepracer/robomaker.env
+
+docker-compose -f ../../docker/docker-compose.yml up
 echo 'waiting for containers to start up...'
 
 #sleep for 20 seconds to allow the containers to start
 sleep 15
+
 
 if xhost >& /dev/null;
 then

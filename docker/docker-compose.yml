@@ -28,7 +28,7 @@ services:
     depends_on:
     - minio
   robomaker:
-    image: crr0004/deepracer_robomaker:console
+    image: richardfan1126/deepracer_robomaker:console_v2.0
     command: ["${ROBOMAKER_COMMAND}"]
     volumes:
       - ../deepracer/simulation/aws-robomaker-sample-application-deepracer/simulation_ws/src:/app/robomaker-deepracer/simulation_ws/src

@@ -10,7 +10,16 @@ mkdir -p docker/volumes/minio/bucket/custom_files \
 ln -s $(eval echo "~${USER}")/.aws  docker/volumes/
 
 # grab local training deepracer repo from crr0004 and log analysis repo from vreadcentric
-git clone --recurse-submodules https://github.com/crr0004/deepracer.git
+git clone https://github.com/richardfan1126/deepracer.git
+cd deepracer
+git checkout -b 2020_version origin/2020_version
+git submodule update --init --recursive
+cd ../
+echo "S3_ENDPOINT_URL=http://$(hostname -I | cut -d' ' -f1):9000" >> deepracer/robomaker.env
+rm docker/.env
+cp deepracer/robomaker.env docker/.env
+echo "MINIO_ACCESS_KEY=minio" >> docker/.env
+echo "MINIO_SECRET_KEY=miniokey" >> docker/.env
 
 git clone https://github.com/breadcentric/aws-deepracer-workshops.git && cd aws-deepracer-workshops && git checkout enhance-log-analysis && cd ..
 
@@ -37,7 +46,7 @@ done
 docker build ${args} -f ./docker/dockerfiles/rl_coach/Dockerfile -t aschu/rl_coach deepracer/
 
 # copy reward function and model-metadata files to bucket 
-cp deepracer/custom_files/* docker/volumes/minio/bucket/custom_files/
+cp -r deepracer/custom_files/* docker/volumes/minio/bucket/custom_files/
 
 # create the network sagemaker-local if it doesn't exit
 SAGEMAKER_NW='sagemaker-local'
@@ -46,3 +55,6 @@ if [ $? -ne 0 ]
 then
 	  docker network create $SAGEMAKER_NW
 fi
+
+docker pull richardfan1126/sagemaker-rl-tensorflow:console_v2.0
+docker pull richardfan1126/deepracer_robomaker:console_v2.0

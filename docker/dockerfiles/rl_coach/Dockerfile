@@ -28,4 +28,4 @@ RUN mkdir /robo/container
 RUN pip install -U sagemaker-python-sdk/ awscli ipython pandas "urllib3==1.22" "pyyaml==3.13" "python-dateutil==2.8.0"
 
 # set command
-CMD (cd rl_coach; ipython rl_deepracer_coach_robomaker.py)
+CMD (cd rl_coach; source env.sh; ipython rl_deepracer_coach_robomaker.py)

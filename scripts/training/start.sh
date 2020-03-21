@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export VNC_PORT=8080
+export MINIO_PORT=9000
 export ROBOMAKER_COMMAND="./run.sh build distributed_training.launch"
 
 source ../../deepracer/robomaker.env
@@ -29,11 +31,11 @@ then
       echo 'Error: vncviewer is not present on the PATH.  Make sure you install it and add it to the PATH.'
     else	
       echo 'attempting to open vnc viewer...'
-      vncviewer localhost:8080
+      vncviewer localhost:${VNC_PORT}
     fi
   else	
     echo 'attempting to open vnc viewer...'
-    gnome-terminal -x sh -c "!!; vncviewer localhost:8080"
+    gnome-terminal -x sh -c "!!; vncviewer localhost:${VNC_PORT}"
   fi
 else
   echo "No display. Falling back to CLI mode."

@@ -9,9 +9,9 @@ services:
   minio:
     image: minio/minio
     ports:
-      - "9000:9000"
+        - "${MINIO_PORT}:${MINIO_PORT}"
     container_name: minio
-    command: server /data
+    command: server --address ":${MINIO_PORT}" /data
     volumes:
       - ./volumes/minio:/data
     restart: unless-stopped
@@ -34,7 +34,7 @@ services:
       - ../deepracer/simulation/aws-robomaker-sample-application-deepracer/simulation_ws/src:/app/robomaker-deepracer/simulation_ws/src
       - ./volumes/robo/checkpoint:/root/.ros/
     ports:
-      - "8080:5900"
+      - "${VNC_PORT}:5900"
     container_name: robomaker
     restart: unless-stopped
     env_file: .env

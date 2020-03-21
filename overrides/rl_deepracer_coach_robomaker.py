@@ -9,7 +9,6 @@ import os
 import glob
 import re
 import subprocess
-from IPython.display import Markdown
 from time import gmtime, strftime
 sys.path.append("common")
 from misc import get_execution_role, wait_for_s3_object
@@ -88,11 +87,23 @@ metric_definitions = [
 
 RLCOACH_PRESET = "deepracer"
 
-gpu_available = os.environ.get("GPU_AVAILABLE", False)
+
 # 'local' for cpu, 'local_gpu' for nvidia gpu (and then you don't have to set default runtime to nvidia)
-instance_type = "local_gpu" if gpu_available else "local"
-image_name = "crr0004/sagemaker-rl-tensorflow:{}".format(
-    "nvidia" if gpu_available else "console")
+instance_type = "local_gpu" if int(gpu_available) else "local"
+
+# hyper parameters
+gpu_available = os.environ.get('GPU_AVAILABLE', False)
+batch_size = os.environ.get('BATCH_SIZE', 64)
+beta_entropy = os.environ.get('BETA_ENTROPY', 0.01)
+num_epochs = os.environ.get('NUM_EPOCHS', 10)
+num_episodes_between_training = os.environ.get('NUM_EPISODES_BETWEEN_TRAINING', 20)
+lr = os.environ.get('LR', 0.0003)
+loss_type = os.environ.get('LOSS_TYPE', 'mean squared error') # ['mean squared error', 'huber']
+epsilon_steps = os.environ.get('EPSILON_STEPS', 10000)
+e_greedy_value = os.environ.get('E_GREEDY_VALUE', 0.05)
+discount_factor = os.environ.get('DISCOUNT_FACTOR', 0.999)
+stack_size = os.environ.get('STACK_SIZE', 1)
+
 
 estimator = RLEstimator(entry_point="training_worker.py",
                         source_dir='src',
@@ -107,32 +118,33 @@ estimator = RLEstimator(entry_point="training_worker.py",
                         train_instance_count=1,
                         output_path=s3_output_path,
                         base_job_name=job_name_prefix,
-                        image_name=image_name,
+                        image_name="richardfan1126/sagemaker-rl-tensorflow:console_v2.0",
                         train_max_run=job_duration_in_seconds, # Maximum runtime in seconds
                         hyperparameters={"s3_bucket": s3_bucket,
                                          "s3_prefix": s3_prefix,
                                          "aws_region": aws_region,
                                          "model_metadata_s3_key": "s3://{}/custom_files/model_metadata.json".format(s3_bucket),
                                          "RLCOACH_PRESET": RLCOACH_PRESET,
-                                         "batch_size": 64,
-                                         "num_epochs": 10,
-                                         "stack_size" : 1,
-                                         "lr" : 0.00035,
-                                         "exploration_type" : "categorical",
-                                         "e_greedy_value" : 0.05,
-                                         "epsilon_steps" : 10000,
-                                         "beta_entropy" : 0.01,
-                                         "discount_factor" : 0.999,
-                                         "loss_type": "mean squared error",
-                                         "num_episodes_between_training" : 20,
-                                         "term_cond_max_episodes" : 100000,
-                                         "term_cond_avg_score" : 100000
+
+                                         "batch_size": batch_size,
+                                         "beta_entropy": beta_entropy,
+                                         "discount_factor": discount_factor,
+                                         "e_greedy_value": e_greedy_value,
+                                         "epsilon_steps": epsilon_steps,
+                                         "exploration_type": "categorical",
+                                         "loss_type": loss_type,
+                                         "lr": lr,
+                                         "num_episodes_between_training": num_episodes_between_training,
+                                         "num_epochs": num_epochs,
+                                         "stack_size": stack_size,
+                                         "term_cond_avg_score": 100000.0,
+                                         "term_cond_max_episodes": 100000
+
                                          #"pretrained_s3_bucket": "{}".format(s3_bucket),
                                          #"pretrained_s3_prefix": "rl-deepracer-pretrained"
-                                         # "loss_type": "mean squared error",
                                       },
                         metric_definitions = metric_definitions,
-                        s3_client=s3Client
+						s3_client=s3Client
                         #subnets=default_subnets, # Required for VPC mode
                         #security_group_ids=default_security_groups, # Required for VPC mode
                     )

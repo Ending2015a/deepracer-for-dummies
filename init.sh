@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+
+# set environment variables
+MINIO_ACCESS_KEY=minio
+MINIO_SECRET_KEY=miniokey
+AWS_ACCESS_KEY=minio
+AWS_SECRET_KEY=miniokey
+
+
 # create directory structure for docker volumes
 mkdir -p docker/volumes/minio/bucket/custom_files \
 		 docker/volumes/robo/checkpoint
@@ -10,16 +18,15 @@ mkdir -p docker/volumes/minio/bucket/custom_files \
 ln -s $(eval echo "~${USER}")/.aws  docker/volumes/
 
 # grab local training deepracer repo from crr0004 and log analysis repo from vreadcentric
-git clone https://github.com/richardfan1126/deepracer.git
-cd deepracer
-git checkout -b 2020_version origin/2020_version
-git submodule update --init --recursive
-cd ../
+git clone --recursive https://github.com/richardfan1126/deepracer.git --branch 2020_version deepracer
 echo "S3_ENDPOINT_URL=http://$(hostname -I | cut -d' ' -f1):9000" >> deepracer/robomaker.env
 rm docker/.env
 cp deepracer/robomaker.env docker/.env
-echo "MINIO_ACCESS_KEY=minio" >> docker/.env
-echo "MINIO_SECRET_KEY=miniokey" >> docker/.env
+echo "MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}" >> docker/.env
+echo "MINIO_SECRET_KEY=${MINIO_SECRET_KEY}" >> docker/.env
+echo "AWS_ACCESS_KEY=${AWS_ACCESS_KEY}" >> docker/.env
+echo "AWS_SECRET_KEY=${AWS_SECRET_KEY}" >> docker/.env
+echo "GPU_AVAILABLE=0"
 
 git clone https://github.com/breadcentric/aws-deepracer-workshops.git && cd aws-deepracer-workshops && git checkout enhance-log-analysis && cd ..
 
